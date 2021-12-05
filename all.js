@@ -4,8 +4,6 @@ const searchResult = document.querySelector(".searchResult-text");
 const addBtn = document.querySelector(".addTicket-btn");
 const areaSelect = document.querySelector(".regionSearch");
 
-console.log(areaSelect);
-
 function renderHtml(location) {
     let str = "";
 
@@ -29,12 +27,13 @@ function renderHtml(location) {
         <div class="ticketCard-content">
     <div>
         <h3>
-         <a href="#" class="ticketCard-name">${item.name}</a>
-     </h3>
+        <a href="#" class="ticketCard-name">${item.name}</a>
+        </h3>
         <p class="ticketCard-description">
          ${item.description}
-     </p>
+         </p>
      </div>
+
     <div class="ticketCard-info">
         <p class="ticketCard-num">
         <span><i class="fas fa-exclamation-circle"></i></span>
@@ -49,6 +48,43 @@ function renderHtml(location) {
     })
     list.innerHTML = str;
     searchResult.textContent = `本次搜尋共 ${filterData.length} 筆資料`
+
+
+
+
+    let totalObj = {};
+    filterData.forEach(function (item, index) {
+        if (totalObj[item.area] == undefined) {
+            totalObj[item.area] = 1;
+        } else {
+            totalObj[item.area] += 1;
+        }
+    })
+
+    console.log(totalObj);
+    
+    let newData = [];
+    let area = Object.keys(totalObj);
+  
+    area.forEach(function (item, index) {
+      let ary = [];
+      ary.push(item);
+      ary.push(totalObj[item]);
+      newData.push(ary);
+    })
+    console.log(newData);
+  
+    const chart = c3.generate({
+      bindto: "#chart",
+      data: {
+        columns: newData,
+        type: 'donut',
+      },
+      donut: {
+        title: "地區"
+      }
+    });
+
 }
 
 function addCard() {
@@ -78,13 +114,16 @@ function addCard() {
 
 addBtn.addEventListener("click", addCard);
 areaSelect.addEventListener("change", function (e) {
-    console.log(areaSelect.value);
     renderHtml(areaSelect.value);
 });
 
+function init() {
+    axios.get('https://raw.githubusercontent.com/hexschool/js-training/main/travelApi.json')
+        .then(function (response) {
+            data = response.data.data;
+            renderHtml();
+        })
+}
 
-axios.get('https://raw.githubusercontent.com/hexschool/js-training/main/travelApi.json')
-    .then(function (response) {
-        data = response.data.data;
-        renderHtml();
-    })
+init();
+
